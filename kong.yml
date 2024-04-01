@@ -1,0 +1,18 @@
+_format_version: "2.1"
+      
+services:
+  - name: my-service
+    url: http://k-8-s-test-k-8-s-az-test-production-argentina-nqanr.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io:80
+    routes:
+      - name: my-route
+        paths:
+          - /test
+        strip_path: true
+        preserve_host: true
+    plugins:
+      - name: np-traffic-splitter
+        config:
+          traffic_percentage_for_secondary: 30
+          domain: k-8-s-test-k-8-s-az-test-staging-usa-cnguq.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io
+        
+          

@@ -5,7 +5,10 @@ upstreams:
       - target: k-8-s-test-k-8-s-az-test-staging-usa-cnguq.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io:443
 services:
   - name: my-service
-    url: http://k-8-s-test-k-8-s-az-test-production-argentina-nqanr.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io:80
+    host: k-8-s-test-k-8-s-az-test-production-argentina-nqanr.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io
+    port: 80
+    protocol: http
+    path: /
     routes:
       - name: my-route
         paths:

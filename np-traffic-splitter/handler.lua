@@ -23,6 +23,8 @@ function NpTrafficSplitterHandler:access(conf)
       
         if conf.preserve_host == true then
           kong.service.request.set_header("Host", kong.request.get_host())
+        else
+          kong.service.request.set_header("Host", domain)
         end
       
         if conf.disable_np_host ~= true then

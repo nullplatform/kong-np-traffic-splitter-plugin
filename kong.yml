@@ -1,5 +1,8 @@
 _format_version: "2.1"
-      
+upstreams:
+  - name: test 
+    targets:
+      - target: k-8-s-test-k-8-s-az-test-staging-usa-cnguq.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io:443
 services:
   - name: my-service
     url: http://k-8-s-test-k-8-s-az-test-production-argentina-nqanr.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io:80
@@ -14,5 +17,5 @@ services:
         config:
           traffic_percentage_for_secondary: 30
           domain: k-8-s-test-k-8-s-az-test-staging-usa-cnguq.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io
-        
+          upstream: test        
           

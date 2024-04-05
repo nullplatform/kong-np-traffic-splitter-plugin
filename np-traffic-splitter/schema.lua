@@ -10,6 +10,7 @@ return {
           { port = {type="number", required = false, default = 443}},
           { schema = {type="string", required = false, default = "https"}},
           { preserve_host = {type="boolean", required = false, default = true}},
+          { upstream = {type="string", required = false}},
 
         },
       },

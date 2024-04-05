@@ -10,11 +10,21 @@ function NpTrafficSplitterHandler:access(conf)
         -- Send traffic to the secondary service based on the configured percentage
         local domain = conf.domain
         kong.service.request.set_scheme(conf.schema)
-        kong.service.set_target(domain, conf.port)
-        kong.log.debug("Routing to secondary upstream URL: ", domain)
+        if conf.upstream then
+          kong.log.debug("Routing to secondary upstream URL: ", conf.upstream, " -- ",domain)
+	  local ok, err = kong.service.set_upstream(conf.upstream)
+          if not ok then
+            kong.log.err("Error going to upstream: ",conf.upstream," -- ",err)
+          end
+	else
+          kong.log.debug("Routing to secondary target URL: ", domain)
+          kong.service.set_target(domain, conf.port)
+        end
+      
         if conf.preserve_host == true then
           kong.service.request.set_header("Host", kong.request.get_host())
         end
+      
         if conf.disable_np_host ~= true then
           kong.service.request.set_header("X-NP-Host", domain)
         end

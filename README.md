@@ -42,6 +42,7 @@ Customize the plugin behavior with these additional options:
 - port: Specifies the port to use, default is 443.
 - schema: Defines the protocol schema, default is https.
 - preserve_host: Boolean, default true. If false, the original host is not forwarded to the target.
+- upstream: if old versions (prev 3.6) hostnames can't be used as targets inside the plugin so a new upstream should be defined and set with the upstream key
 
 ## Running the example
 

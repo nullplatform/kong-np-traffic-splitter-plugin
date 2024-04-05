@@ -11,12 +11,14 @@ describe("NpTrafficSplitterHandler", function()
           set_header = function() end,
         },
         set_target = function() end,
+        set_upstream = function() end,
       },
       request = {
         get_host = function() return "example.com" end,
       },
       log = {
         debug = function() end,
+        err = function() end,
       },
     }
     NpTrafficSplitterHandler = require "handler"
@@ -25,6 +27,7 @@ describe("NpTrafficSplitterHandler", function()
   before_each(function()
     stub(kong.service.request, "set_scheme")
     stub(kong.service, "set_target")
+    stub(kong.service, "set_upstream")
     stub(kong.service.request, "set_header")
     stub(kong.log, "debug")
   end)
@@ -32,6 +35,7 @@ describe("NpTrafficSplitterHandler", function()
   after_each(function()
     kong.service.request.set_scheme:revert()
     kong.service.set_target:revert()
+    kong.service.set_upstream:revert()
     kong.service.request.set_header:revert()
     kong.log.debug:revert()
   end)
@@ -54,6 +58,26 @@ describe("NpTrafficSplitterHandler", function()
       NpTrafficSplitterHandler:access(conf)
 
       assert.stub(kong.service.set_target).was_called_with("example.org", 443)
+      assert.stub(kong.service.request.set_scheme).was_called_with("https")
+      assert.stub(kong.service.request.set_header).was_called_with("X-NP-Host", "example.org")
+      assert.stub(kong.service.request.set_header).was_called_with("Host", "example.com")
+    end)
+    
+    it("routes to secondary using upstream when random is within threshold", function()
+      math.random = function() return 50 end  -- Mocking math.random
+      local conf = {
+        traffic_percentage_for_secondary = 60,
+        domain = "example.org",
+        upstream = "test",
+        schema = "https",
+        port = 443,
+        preserve_host = true,
+      }
+
+      NpTrafficSplitterHandler:access(conf)
+
+      assert.stub(kong.service.set_target).was_not_called_with("example.org", 443)
+      assert.stub(kong.service.set_upstream).was_called_with("test")
       assert.stub(kong.service.request.set_scheme).was_called_with("https")
       assert.stub(kong.service.request.set_header).was_called_with("X-NP-Host", "example.org")
       assert.stub(kong.service.request.set_header).was_called_with("Host", "example.com")

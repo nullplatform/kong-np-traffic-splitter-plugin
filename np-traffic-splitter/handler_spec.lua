@@ -15,6 +15,10 @@ describe("NpTrafficSplitterHandler", function()
       },
       request = {
         get_host = function() return "example.com" end,
+        get_header = function() return "" end,
+      },
+      response = {
+        add_header = function() end,
       },
       log = {
         debug = function() end,

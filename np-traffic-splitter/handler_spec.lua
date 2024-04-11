@@ -9,6 +9,7 @@ describe("NpTrafficSplitterHandler", function()
         request = {
           set_scheme = function() end,
           set_header = function() end,
+          get_header = function() return "" end,
         },
         set_target = function() end,
         set_upstream = function() end,
@@ -19,6 +20,7 @@ describe("NpTrafficSplitterHandler", function()
       },
       response = {
         add_header = function() end,
+        get_header = function() return "" end,
       },
       log = {
         debug = function() end,

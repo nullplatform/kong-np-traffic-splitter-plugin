@@ -20,5 +20,9 @@ services:
         config:
           traffic_percentage_for_secondary: 30
           domain: k-8-s-test-k-8-s-az-test-staging-usa-cnguq.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io
-          upstream: test        
+          upstream: test
+          use_cookies:
+            max_age: 30
+            http_only: true
+            secure: true
           

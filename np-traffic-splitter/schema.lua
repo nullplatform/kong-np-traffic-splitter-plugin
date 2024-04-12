@@ -3,14 +3,6 @@ return {
   fields = {
     { config = {
         type = "record",
-        entity_checks = {
-          {
-            at_least_one_of = {
-              "domain",
-              "upstream"
-            }
-          },
-        },
         fields = {
           { traffic_percentage_for_secondary = { type = "number", required = true, between = {0, 100} } },
           { domain = { type = "string", required = true } },

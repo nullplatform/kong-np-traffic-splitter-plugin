@@ -1,0 +1,29 @@
+_format_version: "2.1"
+upstreams:
+  - name: test 
+    targets:
+      - target: luarocks.org:443
+  - name: test2
+    targets:
+      - target: luarocks.org:443
+services:
+  - name: my-service
+    host: test2
+    port: 443
+    protocol: http
+    path: /
+    routes:
+      - name: my-route
+        paths:
+          - /
+        strip_path: true
+        preserve_host: true
+    plugins:
+      - name: np-traffic-splitter
+        config:
+          traffic_percentage_for_secondary: 30
+          domain: k-8-s-test-k-8-s-az-test-staging-usa-cnguq.kwik-e-mart-main.az.kwik-e-mart-main.nullapps.io
+          upstream: test        
+          use_cookies:
+            enabled: true
+            max_age: 15

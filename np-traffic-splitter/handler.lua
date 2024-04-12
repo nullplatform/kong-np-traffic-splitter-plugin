@@ -2,10 +2,45 @@ local NpTrafficSplitterHandler = {
 	  VERSION = "1.0.0",
 	  PRIORITY = 1000,
 }
+local COOKIE_NAME = "NPUpstreamSelector"
+local COOKIE_VAR_NAME = "cookie_" .. COOKIE_NAME
+
+local function bake_selector_cookie(cookie_conf, cookie_val)
+    local cookie = {}
+    if cookie_conf.max_age then
+        cookie.max_age = cookie_conf.max_age
+    end
+    if cookie_conf.path then
+        cookie.path = cookie_conf.path
+    end
+    if cookie_conf.same_site then
+        cookie.same_site = cookie_conf.same_site
+    end
+    return COOKIE_NAME .. "=" .. cookie_val
+        .. (cookie.max_age and "; Max-Age=" .. cookie.max_age or "")
+        .. (cookie.path and "; Path=" .. cookie.path or "")
+        .. (cookie_conf.secure and "; Secure" or "")
+        .. (cookie_conf.http_only and "; HttpOnly" or "")
+        .. (cookie.same_site and "; SameSite=" .. cookie.same_site or "")
+end
+
 
 function NpTrafficSplitterHandler:access(conf)
     local upstream_url
-    local rand = math.random(100) -- Get a random number between 1 and 100
+    local rand
+    if conf.use_cookies and conf.use_cookies.enabled then
+        if ngx.var[COOKIE_VAR_NAME] == nil then
+            rand = math.random(100)
+
+            kong.response.add_header("Set-Cookie", bake_selector_cookie(conf.use_cookies, rand))
+        else
+            rand = tonumber(ngx.var[COOKIE_VAR_NAME])
+            kong.log.debug("Using cookie selector [selector:"..rand.."]")
+        end
+    end
+    if rand == nil then
+        rand = math.random(100)
+    end
     local choose_primary = kong.request.get_header("X-NP-Upstream") == "false"
     local choose_secondary = kong.request.get_header("X-NP-Upstream") == "true"
     -- Choose upstream according to random number or force secondary if request header is present

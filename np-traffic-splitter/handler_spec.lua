@@ -23,7 +23,10 @@ describe("NpTrafficSplitterHandler", function()
       log = {
         debug = function() end,
         err = function() end,
-      },
+      }
+    }
+    _G.ngx = {
+      var = {}
     }
     NpTrafficSplitterHandler = require "handler"
   end)
@@ -33,6 +36,7 @@ describe("NpTrafficSplitterHandler", function()
     stub(kong.service, "set_target")
     stub(kong.service, "set_upstream")
     stub(kong.service.request, "set_header")
+    stub(kong.response, "add_header")
     stub(kong.log, "debug")
   end)
 
@@ -41,6 +45,8 @@ describe("NpTrafficSplitterHandler", function()
     kong.service.set_target:revert()
     kong.service.set_upstream:revert()
     kong.service.request.set_header:revert()
+    kong.response.add_header:revert()
+
     kong.log.debug:revert()
   end)
   teardown(function()
@@ -134,5 +140,65 @@ describe("NpTrafficSplitterHandler", function()
     
       assert.stub(kong.service.request.set_header).was_not_called_with("Host", "example.com")
     end)
+
+    it("set cookie if no cookie send and use_cookies enabled", function()
+      math.random = function() return 10 end
+      local conf = {
+        traffic_percentage_for_secondary = 20,
+        domain = "example.org",
+        schema = "https",
+        port = 443,
+        preserve_host = false,
+        disable_np_host = false,
+        use_cookies = {
+          enabled = true
+        }
+      }
+      NpTrafficSplitterHandler:access(conf)
+      assert.stub(kong.response.add_header).was.called(2)
+      local set_cookie_call = kong.response.add_header.calls[1]
+      assert.are.equal("Set-Cookie", set_cookie_call.vals[1])
+      assert.are.equal("NPUpstreamSelector=10", set_cookie_call.vals[2])
+    end)
+
+    it("do not set cookie if cookie send and use_cookies enabled", function()
+      math.random = function() return 10 end
+      local conf = {
+        traffic_percentage_for_secondary = 20,
+        domain = "example.org",
+        schema = "https",
+        port = 443,
+        preserve_host = false,
+        disable_np_host = false,
+        use_cookies = {
+          enabled = true
+        }
+      }
+      ngx.var["cookie_NPUpstreamSelector"] = "10"
+      NpTrafficSplitterHandler:access(conf)
+      assert.stub(kong.response.add_header).was.called(1)
+    end)
+
+    it("use cookie if send and use_cookies enabled to choose upstream", function()
+      math.random = function() return 10 end
+      local conf = {
+        traffic_percentage_for_secondary = 20,
+        domain = "example.org",
+        schema = "https",
+        port = 443,
+        preserve_host = true,
+        disable_np_host = false,
+        use_cookies = {
+          enabled = true
+        }
+      }
+      ngx.var["cookie_NPUpstreamSelector"] = "7"
+      NpTrafficSplitterHandler:access(conf)
+      assert.stub(kong.service.set_target).was_called_with("example.org", 443)
+      assert.stub(kong.service.request.set_scheme).was_called_with("https")
+      assert.stub(kong.service.request.set_header).was_called_with("X-NP-Host", "example.org")
+      assert.stub(kong.service.request.set_header).was_called_with("Host", "example.com")
+    end)
+
   end)
 end)
